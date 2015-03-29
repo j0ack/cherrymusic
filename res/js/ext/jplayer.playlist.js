@@ -360,29 +360,46 @@
 			this._initPlaylist(playlist);
 			this._init();
 		},
-		add: function(media, playNow, animate) {
-            var self = this;
-            if(typeof animate === 'undefined'){
-                animate = true;
-            }
-            if(animate){
-                $(this.cssSelector.playlist + " ul.playlist-container-list").append(this._createListItem(media)).find("li:last-child").hide().slideDown(this.options.playlistOptions.addTime);
-            } else {
-                $(this.cssSelector.playlist + " ul.playlist-container-list").append(this._createListItem(media));
-            }
-			this._updateControls();
-            this._createItemHandlers();
-			this.original.push(media);
-			this.playlist.push(media); // Both array elements share the same object pointer. Comforms with _initPlaylist(p) system.
+		add: function(media, playNow, animate, index) {
+		    var self = this;
+		    if(typeof animate === 'undefined'){
+				animate = true;
+		    }
+		
+		    index = index || 0;
+		    var listItem;
+		    if(index){
+				listItem = $(this.cssSelector.playlist + ' ul.playlist-container-list>li').eq(index - 1).after(this._createListItem(media));
+				this.original.splice(index, 0, media);
+				this.playlist.splice(index, 0, media);
+				// refresh
+				this._refresh(true);
+		    } else {
+				listItem = $(this.cssSelector.playlist + ' ul.playlist-container-list').append(this._createListItem(media));
+				this.original.push(media);
+				this.playlist.push(media);
+		    }
+		    
+		    if(animate){
+				listItem.find("li:last-child").hide().slideDown(this.options.playlistOptions.addTime);
+		    } 
+		   
+		    this._updateControls();
+		    this._createItemHandlers();
 
-			if(playNow) {
-				this.play(this.playlist.length - 1);
-			} /*else {
+
+		    if(playNow) {
+				if(index){
+					this.play(index);
+				} else {
+					this.play(this.playlist.length - 1);
+				}
+		    } /*else {
 				if(this.original.length === 1) {
 					this.select(0);
 				}
-			}*/
-            $(self.options.playlistOptions.playlistSelector).trigger('addedItem', [self.options.playlistOptions.playlistSelector]);
+		    }*/
+		    $(self.options.playlistOptions.playlistSelector).trigger('addedItem', [self.options.playlistOptions.playlistSelector]);
 		},
 		remove: function(index) {
 			var self = this;

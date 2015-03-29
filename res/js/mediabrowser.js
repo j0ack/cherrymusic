@@ -223,6 +223,21 @@ MediaBrowser = function(cssSelector, json, title, enable_breadcrumbs, options){
 
         playlistManager.setTrackDestinationLabel();
         MediaBrowser.static.albumArtLoader('#search-panel');
+
+		$(self.cssSelector + ' .cm-media-list-item').draggable({
+			connectToSortable: 'ul.playlist-container-list',
+			appendTo: document.body,
+			revert: 'invalid',
+			helper: function(e){
+				var helper;
+
+				if($(this).hasClass('fileinlist')){
+					helper = $('<p></p>').text($(this).find('.musicfile').first().attr('title'));
+				}
+
+				return helper;
+			}
+		});
     }
 
     this.render();

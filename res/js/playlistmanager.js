@@ -59,7 +59,19 @@ ManagedPlaylist.prototype = {
             helper : 'clone',
             update: function(e,ui){
                 self.jplayerplaylist.scan();
-            }
+            },
+			receive: function(e,ui){
+				var newItem = $(this).data('ui-sortable').currentItem;
+				newItem.hide();
+				
+				if(ui.item.hasClass('fileinlist')){
+					var music = ui.item.find('.musicfile').first();
+					self.playlistManager.addSong(music.attr('path'), music.attr('title'), undefined, true, newItem.index());
+				}
+				
+				// remove new item
+				newItem.remove();
+			}
         });
         $(self.playlistSelector+">ul.playlist-container-list").disableSelection();
 
@@ -162,11 +174,12 @@ ManagedPlaylist.prototype = {
     makeThisPlayingPlaylist : function(){
         this.playlistManager.setPlayingPlaylist(this.id);
     },
-    addTrack : function(track, animate) {
+    addTrack : function(track, animate, index) {
         if(typeof animate === 'undefined'){
             animate = true;
         }
-        this.jplayerplaylist.add(track, false, animate);
+        index = index || 0;
+        this.jplayerplaylist.add(track, false, animate, index);
         this.scrollToTrack(this.jplayerplaylist.playlist.length-1);
     },
     scrollToTrack: function(number){
@@ -274,7 +287,7 @@ PlaylistManager = function(){
         if(availablejPlayerFormats.length == 0){
             alert('Your browser does not support audio playback.');
         }
-	});
+    });
     $(this.cssSelectorjPlayer).bind($.jPlayer.event.setmedia, function(event) {
         var playlist = self.getPlayingPlaylist().jplayerplaylist;
         var track = playlist.playlist[playlist.current];
@@ -754,7 +767,7 @@ PlaylistManager.prototype = {
             $(this.cssSelectorAlbumArt).attr('src', imgurl);
         }
     },
-    addSong : function(path, title, plid, animate){
+    addSong : function(path, title, plid, animate, index){
         "use strict";
         var self = this;
         if(typeof animate === 'undefined'){
@@ -772,7 +785,8 @@ PlaylistManager.prototype = {
         if (typeof playlist == 'undefined') {
             playlist = this.getEditingPlaylist();
         }
-        playlist.addTrack(track, animate);
+		index = index || 0;
+        playlist.addTrack(track, animate, index);
 
         //directly play/select first added track
         if(!jPlayerIsPlaying() && playlist.jplayerplaylist.playlist.length == 1){
